@@ -10,6 +10,7 @@
 	解决掉了随着迭代次数增加，batch_cost time 也增加的问题 #3
 	将图训练和预测彻底分拆，需要思考，如何构造图及其预测 加载 ## 
 '''
+
 import os
 import sys
 reload(sys)
