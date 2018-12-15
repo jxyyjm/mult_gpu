@@ -133,9 +133,10 @@ with tf.variable_scope(tf.get_variable_scope()):
 				print 'y1.name', y1.name
 				print 'y2.name', y2.name
 			print 'when gpu:', i, tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
-			## 这里发现，所有的重复调用该函数，以及多个GPU重复调用该函数，都没有再额外创建变量，仅有的变量是layer-1/w1; layer-2/w2
-			## 因为当前的所有动作，都会统一在tf.variable_scope(tf.get_variable_scope())下的，所以一旦涉及到变量，都是共享形式的 ##
-			## 该函数my_layer，已经设置过 reuse=tf.AUTO_REUSE)了
+			## 这里发现，所有的重复调用该函数，以及多个GPU重复调用该函数，
+			## 都没有再额外创建变量，仅有的变量是layer-1/w1; layer-2/w2 ## 不管在哪个GPU上时，都是共享这两个变量 ##
+			## 该函数my_layer，已经设置过 reuse=tf.AUTO_REUSE)了，自动处理存在的变量作共享变量 ##
+			## 并且，在调用函数时，没有再额外包variable_scope，都是同层关系，所以同层variable-scope内共享了##
 print 'last:', tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
 '''
 
