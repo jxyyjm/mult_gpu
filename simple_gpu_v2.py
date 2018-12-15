@@ -72,10 +72,12 @@ def input_fn(file_name, epoch= 10, shuffle=False, batch_size=16):
 class net_model:
   def __init__(self):
     print 'net_model time:', time.ctime()
-    with tf.variable_scope('layer-1', reuse=tf.AUTO_REUSE):
+    with tf.variable_scope('layer-1', reuse=tf.AUTO_REUSE): ## 命名空间内的变量是可共享的 ##
       self.w1 = tf.get_variable('w1', initializer=tf.random_normal(shape=[4,8], mean=0.0, stddev=1.0), \
                            dtype=tf.float32, regularizer=tf.contrib.layers.l2_regularizer(0.01))
       self.b1 = tf.get_variable('b1', initializer=tf.zeros(shape=[1,8], dtype=tf.float32))
+      ## 可共享变量，必须用tf.get_variable()再次定义时，才会优先使用已经在前面定义过的可共享变量 ##
+      ## 此时不能使用 tf.Variable() ##
     with tf.variable_scope('layer-2', reuse=tf.AUTO_REUSE):
       self.w2 = tf.get_variable('w2', initializer=tf.random_normal(shape=[8,3], mean=0.0, stddev=1.0), \
                            dtype=tf.float32, regularizer=tf.contrib.layers.l2_regularizer(0.01))
@@ -83,6 +85,7 @@ class net_model:
     print '#debug, in class net_model, tf.get_variable_scope', tf.get_variable_scope()
     print '#debug, in class net_model, tf.variable_scope(tf.get_variable_scope)', tf.variable_scope(tf.get_variable_scope)
     ## notice: here I set reuse=tf.AUTO_REUSE
+    ## 其实在GPU上，就不用再单独设定reuse=True了 ##
   def output(self, x):
     with tf.variable_scope('compute'):
       y1 = tf.matmul(x, self.w1) + self.b1
