@@ -6,3 +6,6 @@
 
 
 tf.estimator + gpu 这个，会自动分配显存
+
+新增了tf-record 的读写demo
+
