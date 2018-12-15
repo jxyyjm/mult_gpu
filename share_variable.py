@@ -6,6 +6,12 @@ import tensorflow as tf
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
+'''
+	## notice: Important ##
+	## 关于变量的复用，建议使用tf.variable_scope(name, reuse=tf.AUTO_REUSE):
+	## 可以自动处理，存在变量时则复用，不存在变量时则创建 ##
+	## 手动设置，tf.variable_scope.reuse容易出现变量不存在的错误 ##
+'''
 
 '''
 print '-'*10, 'this is is test scope.reuse'
@@ -30,19 +36,27 @@ with tf.variable_scope('scope3') as scope3:
 	print 'first layer, global trainable_variables:', tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
 	with tf.variable_scope('scope4') as scope4:
 		var4 = tf.get_variable('var4', [1])
-		print 'var4.name', var4.name
+		print 'var4.name', var4.name ## scope3/scope4/var4:0 ##
 		print 'secon layer, current scope:', scope4
 		print 'secon layer, current scope:', tf.get_variable_scope()
 		print 'secon layer, vari_scope  trainable_variables:', tf.get_variable_scope().trainable_variables()
 		print 'secon layer, name_scope  trainable_variables:', tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, 'scope3')
 		print 'secon layer, global      trainable_variables:', tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
 		scope4.reuse_variables()
-		var5 = tf.get_variable('var4', [1])
-		var6 = tf.get_variable('var4', [1]) ## 如果是var6=tf.get_variable('var5', [1]) 会报错，因为什么呢？scop4.reuse_variables() 已经设定了 ## 那么tf.get_variabel只会寻找同名的,没有同名地只好报错啦 ##
-		#var7 = tf.get_variable('var3', [1]) ## 这里也会报错，是因为 scope4做了 reuse=True, 但是这个variable_scope并没有变量名称为var4的变量。
-		with tf.variable_scope(scope3, reuse=tf.AUTO_REUSE): ## 这种方式比较靠谱，会自动处理reuse 和 变量存在的问题 ## 检查域内，有同名变量则复用，无同名变量则创建
+		var5 = tf.get_variable('var4', [1]) ## var5.name == scope/scope4/var4:0 ##
+		var6 = tf.get_variable('var4', [1]) 
+		## 如果是var6=tf.get_variable('var5', [1]) 会报错，
+		## 因为什么呢？scop4.reuse_variables() 已经设定了 
+		## 那么tf.get_variabel只会寻找同名的,没有同名地只好报错啦 ##
+		## var7 = tf.get_variable('var3', [1]) ## 这里也会报错，
+		## 是因为 scope4做了 reuse=True, 但是这个variable_scope并没有变量名称为var4的变量。
+		with tf.variable_scope(scope3, reuse=tf.AUTO_REUSE):
+			## 这种方式比较靠谱，会自动处理reuse 和 变量存在的问题 
+			## 检查域内，有同名变量则复用，无同名变量则创建
 			var7 = tf.get_variable('var3', [1])
 			var8 = tf.get_variable('var8', [1])
+			## var7.name == scope3/var3:0 ##
+			## var8.name == scope3/var8:0 ## 
 		print 'var5.name', var5.name
 		print 'var6.name', var6.name
 		print 'var7.name', var7.name
@@ -90,6 +104,8 @@ with tf.variable_scope(tf.get_variable_scope()) as scope_used:
 	## 变量域，设置了reuse=tf.AUTO_REUSE，则每次使用到这个变量域时，会自动复用 
 	## 			有同名变量则复用，无同名变量则创建 ## 名：指 用variable_scope1/variable_scope2/weight 这样的来构成的 ##
 	##			同名检查，是包括这些变量域前缀的检查的 ## 必须是同域且同前缀的，才认为是同名变量 ##
+	## notice: 变量是以variable_scope来作name前缀的 ##
+	## notice: operation是以name_scope来作name前缀的 ##
 	print '-'*10, 'all trainable variables:', '-'*10, tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
 '''
 '''
