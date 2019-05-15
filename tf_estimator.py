@@ -14,7 +14,7 @@ tf.logging.set_verbosity(tf.logging.INFO) ## hook-logging alos print ##
  
 train_data = DataReadAndNegSamp(file_input='./user_click_urls.ID.small').train_data
 hidden_dim = 128 
-batch_size = 100 
+batch_size = 1024*32 
 epoch_num  = 10
 row_num, col_num = train_data.shape
 col_max    = train_data.max()
@@ -43,7 +43,7 @@ def build_feature_columns():
   return [user_id, url_id, tag_id1, tag_id2, tag_id3, tag_id4, tag_id5]
 
 def model_mine(features, labels, mode, params):
-  with tf.device('/cpu:0'): ## 变量很大,在GPU上分配不足 ##
+  with tf.device('/gpu:0'): ## 若变量很大,会在GPU上分配不足 ##
     with tf.variable_scope('weight'):
 #      w = tf.get_variable(name = 'w', dtype = tf.float32, trainable=True, \
 #          regularizer = tf.contrib.layers.l2_regularizer(0.1), \
@@ -75,7 +75,7 @@ def model_mine(features, labels, mode, params):
   optimizer= tf.train.AdamOptimizer(learning_rate = 0.005)
   train_op = optimizer.minimize(loss = loss, global_step = tf.train.get_global_step())
 
-  predictions = {'prob':prob, 'plabel':plabel, 'accuracy':accuracy[0]}
+  predictions = {'prob':prob, 'plabel':plabel, 'accuracy':accuracy}
   #print 'all-keys:', tf.Graph.get_all_collection_keys()
   if mode == tf.estimator.ModeKeys.PREDICT:
     return tf.estimator.EstimatorSpec(mode, predictions = predictions)
@@ -84,7 +84,7 @@ def model_mine(features, labels, mode, params):
   if mode == tf.estimator.ModeKeys.TRAIN:
     return tf.estimator.EstimatorSpec(mode, loss = loss, train_op = train_op, training_hooks=[logging_hook])
   if mode == tf.estimator.ModeKeys.EVAL:
-    return tf.estimator.EstimatorSpec(mode, eval_metric_ops = {'accuracy': predictions['accuracy']})
+    return tf.estimator.EstimatorSpec(mode, loss = loss, eval_metric_ops = {'accuracy': predictions['accuracy']})
 def build_estimator(model_dir):
   run_config = tf.estimator.RunConfig().replace( \
                session_config = tf.ConfigProto( \
