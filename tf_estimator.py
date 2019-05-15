@@ -115,3 +115,13 @@ for n in range(epoch_num):
   print getNow(), 'epoch:', n, 'step:', global_step, 'test accuracy:', res['accuracy']
   #for key in sorted(res): print key, res[key]
 
+'''
+notice:
+  1) hand code is faster than tf.estimator
+  2) batch_size need to set large enough is epanded GPU power
+  3) neg sampling need again to do each epoch, especial hand neg sampling
+  4) accuracy in tf.estimator could be tf.metrics.accuracy; bu in hand code as follow
+     # correct_prediction = tf.equal( tf.argmax(y_, 1), tf.argmax(output, 1))
+     # accuracy = tf.reduce_mean( tf.cast(correct_prediction, tf.float32))
+  5) 
+'''
